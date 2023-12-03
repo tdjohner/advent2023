@@ -1,7 +1,7 @@
 # Teagan Johner
 # Advent of Code 2023
-# Day 01
-# https://adventofcode.com/2023/day/1
+# Day 02
+# https://adventofcode.com/2023/day/2
 #
 # Part ONE:
 # A set number of marbles, each of 3 colors go into the bag.
