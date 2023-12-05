@@ -9,13 +9,15 @@
 #  Get the sum of the part numbers
 #
 # Part TWO:
+# Any "*" symbol that is adjacent to exactly two numbers is a gear.
+#  the "gear ratio" is the multiple of those two numbers. Get the 
+#  sum of the gear ratios.
 
 import os
 import re
 from aocd import get_data
 
-# The data contains only symbols, numbers, and "."
-nonce = '.'
+# Regular expressions to parse out the numbers and symbols
 symbol = '[^a-zA-Z0-9\.\n]' 
 number = '[0-9]+'
 
@@ -25,8 +27,14 @@ symbol_indexes = []
 number_indexes = []
 # List of tuples: (number, x, y) A number adjacent to a symbol is a valid part number
 part_numbers = set()
+# Gear ratios: (number object, symbol object)
+potential_gear_ratios = set()
+# Gear ratios: x = number1 * number2
+gear_ratios = []
+# Need to track gear objects to avoid duplicating gear ratios
+verified_gears = set()
 
-os.environ["AOC_SESSION"] = "53616c7465645f5fa0677714e7f313c514ccdfe2bb60568ba7d9aec24ed0f0d5aebbf2e0b1b2bdb42f213a69c29be3d6db90be989c343cf6c8be5e3327e3a2c5"
+os.environ["AOC_SESSION"] = ""
 data = get_data(day=3, year=2023)
 
 
@@ -38,24 +46,39 @@ for line in data.split('\n'):
     row += 1
 
 # Evaluate symbol and number coordinates to determine valid "part numbers"
-# For each number see if a symbol is within 1 column and within 1 row:
-for n in number_indexes:
-    x_number_start = n[0]
-    x_number_end = n[3]
-    y_number = n[1]
-    for s in symbol_indexes:
-        x_symbol = s[0]
-        y_symbol = s[1]
+for s in symbol_indexes:
+    x_symbol = s[0]
+    y_symbol = s[1]
+    symbol_value = s[2]
+    for n in number_indexes:
+        x_number_start = n[0]
+        x_number_end = n[3]
+        y_number = n[1]
+        
         # symbol is within 1 row of number
         if y_number - 1 <= y_symbol <= y_number + 1:
             # symbol is within 1 column of number, on either side
             if x_number_start - 1 <= x_symbol <= x_number_end:
                 # save number and location, duplicates not allowed
                 part_numbers.add((n[2], n[0], n[1])) # (number, x, y)
+                
+                # only "*" characters can be gears.
+                if symbol_value == "*":
+                    # Add to the set for later evaluation
+                    potential_gear_ratios.add((n, s))                
+                        
+# recall gear ratios: (number object, symbol object) : ((x, y, number, end), (x, y, symbol))        
+for g1 in potential_gear_ratios:
+    if (g1[1] not in verified_gears):
+        for g2 in potential_gear_ratios:
+            if g1 != g2 and g1[1] == g2[1]:
+                gear_ratios.append(int(g1[0][2]) * int(g2[0][2]))
+                verified_gears.add(g1[1]) # add the gear to the known gear ratios
 
 total = sum([int(p[0]) for p in part_numbers])
-print(total)
-
+gear_ratios_total = sum(gear_ratios)
+print("Part number:", total)
+print("Gear ratios sum:", gear_ratios_total)
 
 
 
